@@ -2,30 +2,18 @@ pipeline {
     agent any
 
     tools {
-        dockerTool "Dockertool"
+        nodejs "Node25"
+        dockerTool "Dockertool" 
     }
 
     stages {
-
         stage('Instalar dependencias') {
-            agent {
-                docker {
-                    image 'node:20'
-                    args '-u root'
-                }
-            }
             steps {
                 sh 'npm install'
             }
         }
 
         stage('Ejecutar tests') {
-            agent {
-                docker {
-                    image 'node:20'
-                    args '-u root'
-                }
-            }
             steps {
                 sh 'npm test'
             }
@@ -33,7 +21,7 @@ pipeline {
 
         stage('Construir Imagen Docker') {
             when {
-                expression { currentBuild.currentResult == 'SUCCESS' }
+                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
             }
             steps {
                 sh 'docker build -t hola-mundo-node:latest .'
@@ -42,7 +30,7 @@ pipeline {
 
         stage('Ejecutar Contenedor Node.js') {
             when {
-                expression { currentBuild.currentResult == 'SUCCESS' }
+                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
             }
             steps {
                 sh '''
